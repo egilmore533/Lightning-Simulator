@@ -6,6 +6,11 @@
 #include "vector.h"
 
 /**
+ * @file	graphics.h
+ * @brief	the graphic and rendering pipeline for the project, also keeps track of gametime
+ */
+
+/**
  * @brief	initializes the main window and the main renderer.
  * @param   [in]	windowName	If non-null, name of the window, will be displayed at the top of the window.
  * @param	viewSize		  	Width and Height of the view.

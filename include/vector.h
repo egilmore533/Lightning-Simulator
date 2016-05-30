@@ -3,6 +3,11 @@
 
 #include "SDL.h"
 
+/**
+ * @file	vector.h
+ * @brief	2D vector, its functions/macros
+ */
+
 #define PI					3.141589	/**< Pi for the our purposes */
 
 #define WINDOW_HEIGHT		768
