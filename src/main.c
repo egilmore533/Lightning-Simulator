@@ -1,6 +1,10 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "simple_logger.h"
 
 #include "graphics.h"
+#include "lightning.h"
 #include "sprite.h"
 
 void init_all_systems();
@@ -9,10 +13,12 @@ void init_all_systems();
 int main(int argc, char *argv[])
 {
 	int done = 0;
+	int x, y;
 	const Uint8 *keys = NULL;
 	SDL_Renderer *the_renderer;
-	Sprite *lightning = NULL;
+	Lightning *lightning = NULL;
 	SDL_Point *center = NULL;
+	Sprite *test = NULL;
 
 	init_all_systems();
 
@@ -22,14 +28,19 @@ int main(int argc, char *argv[])
 
 	the_renderer = graphics_get_renderer();
 
-	lightning = sprite_load("images/10390930_940528392639550_6986969352470416642_n.jpg", vect2d_new(1, 18), 1, 1);
+	lightning = lightning_new(vect2d_new(100, 100), vect2d_new(200, 300), 16, 90);
+	//test = sprite_load("images/test.jpg", vect2d_new(960, 720), 1, 1);
 	do
 	{
 		SDL_RenderClear(the_renderer);
 
-		center->x = lightning->frameSize.x / 2;
-		center->y = lightning->frameSize.y / 2;
-		sprite_draw(lightning, 1, vect2d_new(100, 100), vect2d_new(120,1), center, 0, SDL_FLIP_NONE);
+		center->x = 0;
+		center->y = 0;
+		lightning_draw(lightning);
+		sprite_draw(test, 1, vect2d_new(200, 300), vect2d_new(1, 1), center, 0, SDL_FLIP_NONE);
+
+		SDL_GetMouseState(&x, &y);
+		printf("Mouse %d, %d\n", x, y);
 
 		graphics_next_frame();
 		SDL_PumpEvents();
@@ -57,4 +68,7 @@ void init_all_systems()
 
 	sprite_init_system(100);
 	slog("\n\n ============= SPRITE START ====================\n\n");
+
+	lightning_init_system(100);
+	slog("\n\n ============= LIGHTNING START ====================\n\n");
 }

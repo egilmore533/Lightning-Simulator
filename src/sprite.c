@@ -149,7 +149,7 @@ Sprite *sprite_load(char *filename, Vect2d frameSize, int fpl, int frames)
 	if(tempSurface == NULL)
 	{
 		slog("unable to load sprite as a surface");
-		exit(0);
+		exit(4);
 	}
 	else
 	{
@@ -160,14 +160,14 @@ Sprite *sprite_load(char *filename, Vect2d frameSize, int fpl, int frames)
 		if(tempTexture == NULL)
 		{
 			slog("unable to load sprite as a Texture");
-			exit(0);
+			exit(5);
 		}
 	}
 	
 	/*then copy the given information to the sprite*/
 	sprite->image = tempTexture;	
 	sprite->fpl = fpl;
-	sprite->imageSize = vect2d_new(tempSurface->w, tempSurface->w); 
+	sprite->imageSize = vect2d_new(tempSurface->w, tempSurface->h); 
 	sprite->frameSize.x = frameSize.x;
 	sprite->frameSize.y = frameSize.y;
 	sprite->filename = filename;
@@ -196,6 +196,7 @@ void sprite_draw(Sprite *sprite, int frame, Vect2d drawPos, Vect2d scale, SDL_Po
 		slog("sprite doesn't point to anything");
 		return;
 	}
+	frame--;
 	source.x = frame % sprite->fpl * sprite->frameSize.x;
 	source.y = frame / sprite->fpl * sprite->frameSize.y;
 	source.w = sprite->frameSize.x;
@@ -205,5 +206,5 @@ void sprite_draw(Sprite *sprite, int frame, Vect2d drawPos, Vect2d scale, SDL_Po
 	destination.y = drawPos.y;
 	destination.w = sprite->frameSize.x * scale.x;
 	destination.h = sprite->frameSize.y * scale.y;
-	SDL_RenderCopy(renderer, sprite->image, &source, &destination);
+	SDL_RenderCopyEx(renderer, sprite->image, &source, &destination, angle, center, flip);
 }

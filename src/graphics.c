@@ -104,7 +104,7 @@ void graphics_frame_delay()
     graphicsFPS = 1000.0/MAX(graphicsNow - graphicsThen,0.001);
     if (graphicsPrintFPS)
     {
-        printf("FPS: %f\n",graphicsFPS); //printf so the log isn't filled with frame rate
+        //printf("FPS: %f\n",graphicsFPS); //printf so the log isn't filled with frame rate
     }
 }
 
