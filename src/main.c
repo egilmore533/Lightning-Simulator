@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "simple_logger.h"
 
@@ -24,20 +25,21 @@ int main(int argc, char *argv[])
 
 	center = (SDL_Point *) malloc(sizeof(SDL_Point));
 	memset(center, 0, sizeof(SDL_Point));
-	
+	srand ( time(NULL) );
 
 	the_renderer = graphics_get_renderer();
 
-	lightning = lightning_new(vect2d_new(100, 100), vect2d_new(200, 300), 16, 90);
-	//test = sprite_load("images/test.jpg", vect2d_new(960, 720), 1, 1);
+	lightning = lightning_new(vect2d_new(100, 300), vect2d_new(1100, 300), 8);
+	lightning->draw = NULL;
+	lightning_create_bolt(lightning, 8);
 	do
 	{
 		SDL_RenderClear(the_renderer);
 
 		center->x = 0;
 		center->y = 0;
-		lightning_draw(lightning);
-		sprite_draw(test, 1, vect2d_new(200, 300), vect2d_new(1, 1), center, 0, SDL_FLIP_NONE);
+
+		lightning_draw_all();
 
 		SDL_GetMouseState(&x, &y);
 		printf("Mouse %d, %d\n", x, y);
@@ -69,6 +71,6 @@ void init_all_systems()
 	sprite_init_system(100);
 	slog("\n\n ============= SPRITE START ====================\n\n");
 
-	lightning_init_system(100);
+	lightning_init_system(10000);
 	slog("\n\n ============= LIGHTNING START ====================\n\n");
 }

@@ -16,6 +16,19 @@ Vect2d vect2d_new(float a, float b)
 }
 
 /**
+ * @brief	quick constructor for a vect3d.
+ * @param	a	The float to become the x.
+ * @param	b	The float to become the y.
+ * @param	c	The float to become the z.
+ * @return	the new vect2d.
+ */
+Vect3d vect3d_new(float a, float b, float c)
+{
+	Vect3d v = {a, b, c};
+	return v;
+}
+
+/**
  * @brief	Vect2d get length via ya homie pythagoras.
  * @param	vect	The vect.
  * @return	A float.
@@ -23,6 +36,16 @@ Vect2d vect2d_new(float a, float b)
 float vect2d_get_length(Vect2d vect)
 {
 	return sqrt(vect.x * vect.x + vect.y * vect.y);
+}
+
+/**
+ * @brief	Vect3d get length via ya homie pythagoras.
+ * @param	vect	The vect.
+ * @return	A float.
+ */
+float vect3d_get_length(Vect3d vect)
+{
+	return sqrt(vect.x * vect.x + vect.y * vect.y + vect.z * vect.z);
 }
 
 /**
@@ -45,6 +68,29 @@ void vect2d_normalize(Vect2d *vect)
 	length = 1/length;
 	vect->x *= length;
 	vect->y *= length;
+}
+
+/**
+ * @brief	Vect 3D normalize.
+ * @param [in,out]	vect	If non-null, the vect.
+ */
+void vect3d_normalize(Vect3d *vect)
+{
+	float length;
+	if(vect == NULL)
+	{
+		return;
+	}
+	length = vect3d_get_length(*vect);
+	if(length == 0.0f)
+	{
+		return;
+	}
+
+	length = 1/length;
+	vect->x *= length;
+	vect->y *= length;
+	vect->z *= length;
 }
 
 /**
