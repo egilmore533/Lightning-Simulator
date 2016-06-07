@@ -2,12 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "SDL_image.h"
 #include "simple_logger.h"
 
-#include "SDL_image.h"
-#include "sprite.h"
 #include "graphics.h"
-
+#include "sprite.h"
 
 static Sprite *spriteList = NULL;
 static int spriteNum = 0;
@@ -207,4 +206,53 @@ void sprite_draw(Sprite *sprite, int frame, Vect2d drawPos, Vect2d scale, SDL_Po
 	destination.w = sprite->frameSize.x * scale.x;
 	destination.h = sprite->frameSize.y * scale.y;
 	SDL_RenderCopyEx(renderer, sprite->image, &source, &destination, angle, center, flip);
+}
+
+/**
+ * @brief draws the sprite frame to the screen with random parameters to give it a blooming effect
+ * @param	[in] sprite		the image reference to be drawn from
+ * @param	frame			the frame of  the image to draw
+ * @param	drawPos			2D vector of where the sprite should be drawn in the game world
+ * @param	scale			how much to scale the image
+ * @param	[in] center		the center point of the image to rotate around
+ * @param	angle			the angle to rotate it by
+ * @param	flip			whether or not to flip the image
+ */
+void sprite_bloom_draw(Sprite *sprite, int frame, Vect2d drawPos, Vect2d scale, SDL_Point *center, float angle, SDL_RendererFlip flip)
+{
+	int i;
+	int size_factor;
+	SDL_Rect source, destination;
+	SDL_Renderer *renderer = graphics_get_renderer();
+	if(!sprite)
+	{
+		slog("sprite doesn't point to anything");
+		return;
+	}
+	SDL_SetTextureBlendMode(sprite->image, SDL_BLENDMODE_BLEND);
+	frame--;
+	source.x = frame % sprite->fpl * sprite->frameSize.x;
+	source.y = frame / sprite->fpl * sprite->frameSize.y;
+	source.w = sprite->frameSize.x;
+	source.h = sprite->frameSize.y;
+
+	size_factor = rand() % 25;	
+	for(i = 0; i < 1; i++)
+	{
+		destination.x = drawPos.x - (size_factor / 2);
+		destination.y = drawPos.y - (size_factor / 2);
+		destination.w = (sprite->frameSize.x * scale.x) + (size_factor);
+		destination.h = (sprite->frameSize.y * scale.y) + (size_factor);
+		SDL_SetTextureAlphaMod(sprite->image, 40);
+			
+		SDL_RenderCopyEx(renderer, sprite->image, &source, &destination, angle, center, flip);
+	}
+	
+	/*destination.x = drawPos.x;
+	destination.y = drawPos.y;
+	destination.w = sprite->frameSize.x * scale.x;
+	destination.h = sprite->frameSize.y * scale.y;
+	SDL_RenderCopyEx(renderer, sprite->image, &source, &destination, angle, center, flip);
+	*/
+	SDL_SetTextureBlendMode(sprite->image, SDL_BLENDMODE_NONE);
 }

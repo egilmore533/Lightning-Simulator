@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "simple_logger.h"
+
 #include "graphics.h"
 
 /* rendering pipeline data */
@@ -8,7 +9,7 @@ static SDL_Window			*graphicsMainWindow = NULL;
 static SDL_Renderer			*graphicsRenderer = NULL;
 
 /* timing */
-static Uint32				graphicsFrameDelay = 30;
+static Uint32				graphicsFrameDelay = 45;
 static Uint32				graphicsNow = 0;
 static Uint32				graphicsThen = 0;
 static Uint8				graphicsPrintFPS = 1;

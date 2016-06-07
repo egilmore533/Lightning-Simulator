@@ -10,12 +10,12 @@
 
 #define PI					3.141589	/**< Pi for the our purposes */
 
-#define WINDOW_HEIGHT		768
-#define WINDOW_WIDTH		1366
+#define WINDOW_HEIGHT		768			/**< Width of the window for the application */
+#define WINDOW_WIDTH		1366		/**< Height of the window for the application */
 
-#define MAX(a,b) (a>b?a:b)				/**< return the largest of two values. can be read as: if a greater than b then a, else b */
+#define MAX(a,b)			(a>b?a:b)	/**< return the largest of two values. can be read as: if a greater than b then a, else b */
 
-#define MIN(a,b) (a<b?a:b)				/**< return the smallest of two values. can be read as: if a less than b then a, else b */
+#define MIN(a,b)			(a<b?a:b)	/**< return the smallest of two values. can be read as: if a less than b then a, else b */
 
 
 /**

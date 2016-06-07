@@ -1,9 +1,10 @@
 #include <math.h>
 #include <stdlib.h>
 
-#include "lightning.h"
 #include "simple_logger.h"
 
+#include "graphics.h"
+#include "lightning.h"
 
 static Sprite *middleChunk = NULL;
 static Sprite *rightCap = NULL;
@@ -14,6 +15,62 @@ static Lightning *lightningList = NULL;
 static int lightningNum = 0;
 static int lightningMax = 0;
 
+/**
+ * @brief sorts the linked list given to it by the pos, smallest to largest, recursively calls itself to shorten until comparing one position to the last position in the list
+ * @param head [in,out]		the first position in the list of positions to be sorted
+ * @return the head of the newly sorted linkedList
+ */
+Position *sort_positions(Position *head)
+{
+	Position *current, *prev, *smallest, *smallestPrev, *largest;
+	Position *temp;
+
+	if(!head || !head->next)
+	{
+		slog("list is already sorted/doesn't exist");
+		return;
+	}
+	current = head;
+	smallest = head;
+	prev = head;
+	smallestPrev = head;
+	largest = head;
+
+	while(current->next != NULL)
+	{
+		if(current->pos < smallest->pos)
+		{
+			smallestPrev = prev;
+			smallest = current;
+		}
+		if(current->pos > largest->pos)
+		{
+			largest = current;
+		}
+		prev = current;
+		current = current->next;
+	}
+
+	if(smallest != head)
+	{
+		smallestPrev->next = head;
+		temp = head->next;
+		head->next = smallest->next;
+		smallest->next = temp;
+	}
+
+	smallest->next = sort_positions(smallest->next);
+	if(smallest->next == largest)
+	{
+		smallest->next->next = NULL;
+	}
+	return smallest;
+}
+
+/**
+ * @brief initializes the lightning memory management system, also loads the sprites needed to draw the lightning
+ * @param maxLightning		the maximum amount of lightning segments that can exist at a time
+ */
 void lightning_init_system(int maxLightning)
 {
 	int i;
@@ -39,6 +96,9 @@ void lightning_init_system(int maxLightning)
 	atexit(lightning_close_system);
 }
 
+/**
+ * @brief closes the lightning memory management system
+ */
 void lightning_close_system()
 {
 	int i;
@@ -60,6 +120,10 @@ void lightning_close_system()
 	lightningMax = 0;
 }
 
+/**
+ * @brief frees a lightning segment from the lightningList and destroys the pointer to it so anything with a pointer to that lightning segment is destroyed
+ * @param lightning [in,out]		the lightning that is to be removed from memory
+ */
 void lightning_free(Lightning **lightning)
 {
 	Lightning *target;
@@ -78,6 +142,13 @@ void lightning_free(Lightning **lightning)
 	*lightning = NULL;
 }
 
+/**
+ * @brief creates a new lightning in the lightningList with the given info
+ * @param start		vect2d of the starting point for the lightning
+ * @param end		vect2d of the ending point for the lightning
+ * @param thickness	how thick the lightning will be 
+ * @return pointer to the position in the lightningList where the newly created lightning exists
+ */
 Lightning *lightning_new(Vect2d start, Vect2d end, float thickness)
 {
 	int i;
@@ -117,6 +188,11 @@ Lightning *lightning_new(Vect2d start, Vect2d end, float thickness)
 
 }
 
+/**
+ * @brief draws the lightning to the renderer using the statically held sprites, also draws the bloom for the lightning
+ *			uses trig to determine how long the lightning should be, and what angle it should be drawn at
+ * @param self [in]	the lightning that is to be drawn
+ */
 void lightning_draw(Lightning *self)
 {
 	Vect2d tangent; 
@@ -135,12 +211,21 @@ void lightning_draw(Lightning *self)
 	center->x = 0;
 	center->y = 0;
 
+	SDL_SetTextureBlendMode(leftCap->image, SDL_BLENDMODE_BLEND);
+	SDL_SetTextureBlendMode(rightCap->image, SDL_BLENDMODE_BLEND);
+	sprite_bloom_draw(middleChunk, 1, self->start, vect2d_new(vect2d_get_length(tangent) + 1, thick), center, rot, SDL_FLIP_NONE);
+	sprite_bloom_draw(leftCap, 1, vect2d_new(self->start.x - thick, self->start.y - thick), vect2d_new(thick, thick), center, rot, SDL_FLIP_NONE);
+	sprite_bloom_draw(rightCap, 1, self->end, vect2d_new(thick, thick), center, rot, SDL_FLIP_NONE);
+
 	sprite_draw(middleChunk, 1, self->start, vect2d_new(vect2d_get_length(tangent) + 1, thick), center, rot, SDL_FLIP_NONE);
-	sprite_draw(rightCap, 1, vect2d_new(self->start.x - thick, self->start.y - thick), vect2d_new(thick, thick), center, rot, SDL_FLIP_HORIZONTAL);
+	sprite_draw(leftCap, 1, vect2d_new(self->start.x - thick, self->start.y - thick), vect2d_new(thick, thick), center, rot, SDL_FLIP_NONE);
 	sprite_draw(rightCap, 1, self->end, vect2d_new(thick, thick), center, rot, SDL_FLIP_NONE);
 
 }
 
+/**
+ * @brief draw all lighting in the lightningList that has a draw function. Also color mods the sprites that all lightning share periodically to go throught the rainbow.
+ */
 void lightning_draw_all()
 {
 	int i;
@@ -152,7 +237,9 @@ void lightning_draw_all()
 
 	SDL_SetTextureAlphaMod(middleChunk->image, alpha);
 	SDL_SetTextureAlphaMod(rightCap->image, alpha);
+	SDL_SetTextureAlphaMod(leftCap->image, alpha);
 
+	SDL_SetTextureColorMod(leftCap->image, color.r, color.g, color.b);
 	SDL_SetTextureColorMod(middleChunk->image, color.r, color.g, color.b);
 	SDL_SetTextureColorMod(rightCap->image, color.r, color.g, color.b);
 
@@ -232,7 +319,7 @@ void lightning_draw_all()
 		}
 	}
 
-	//alpha = 100 * (1 + sin(SDL_GetTicks() * 2 * 3.14 / 2000));
+	//alpha = 100 * (1 + sin(get_time() * 2 * 3.14 / 2000));
 
 	for(i = 0; i < lightningMax; i++)
 	{
@@ -243,6 +330,13 @@ void lightning_draw_all()
 	}
 }
 
+/**
+ * @breif creates the actual bolt of lightning, generates points randomly on the line segment, based on how long it is. 
+ *			Then sorts the linked list of points on the line. Finally randomly displace the points under parameters of the previous point,
+ *			and predefined values for sway and jaggedness that we want the bolt to have.
+ * @param main_lightning [in]	the main lightning, that defines the start and end of the bolt we are about to make
+ * @param thickness				the thickness of the bolt we are creating
+ */
 void lightning_create_bolt(Lightning *main_lightning, float thickness)
 {
 	int i;
@@ -273,9 +367,9 @@ void lightning_create_bolt(Lightning *main_lightning, float thickness)
 	currentPosition = currentPosition->next;
 	currentPosition->next = NULL;
 
-	for(i = 0; i < length / (thickness * 2); i++)
+	for(i = 0; i < length / (thickness * 4); i++)
 	{
-		currentPosition->pos = ((float)rand() / (float)RAND_MAX/1);
+		currentPosition->pos = ((float)rand() / (float)RAND_MAX/1); //random float between 1 and 0
 		currentPosition->next = (Position *)malloc(sizeof(Position));
 		currentPosition = currentPosition->next;
 		currentPosition->next = NULL;
@@ -288,16 +382,21 @@ void lightning_create_bolt(Lightning *main_lightning, float thickness)
 	while(currentPosition->next != NULL)
 	{
 		pos = currentPosition->pos;
-
-
 		scale = (length * JAGGEDNESS) * (pos - prevPos);
-		envelope = pos > 0.95f ? 20 * (1 - pos) : 1;
+
+		if(pos > 0.95f)
+		{
+			envelope = 20 * (1 - pos);
+		}
+		else
+		{
+			envelope = 1;
+		}
 
 		displacement = (rand() % (2 * SWAY)) - SWAY;
 		displacement -= (displacement - prevDisplacement) * (1 - scale);
 		displacement *= envelope;
 
-		//point = main_lightning->start + pos * tangent + displacement * normal;
 		vect2d_scale(temp, tangent, pos);
 		vect2d_scale(temp2, normal, displacement);
 		vect2d_add(temp, temp2, point); 
@@ -317,49 +416,19 @@ void lightning_create_bolt(Lightning *main_lightning, float thickness)
 	return;
 }
 
-Position *sort_positions(Position *head)
+/**
+ * @brief removes all lightning in the lightningList
+ */
+void lightning_purge_system()
 {
-	Position *current, *prev, *smallest, *smallestPrev, *largest;
-	Position *temp;
-
-	if(!head || !head->next)
+	int i;
+	Lightning *lightning = NULL;
+	for(i = 0; i < lightningMax; i++)
 	{
-		slog("list is already sorted/doesn't exist");
-		return;
-	}
-	current = head;
-	smallest = head;
-	prev = head;
-	smallestPrev = head;
-	largest = head;
-
-	while(current->next != NULL)
-	{
-		if(current->pos < smallest->pos)
+		if(lightningList[i].inUse && lightningList[i].free)
 		{
-			smallestPrev = prev;
-			smallest = current;
+			lightning = &lightningList[i];
+			lightningList[i].free(&lightning);
 		}
-		if(current->pos > largest->pos)
-		{
-			largest = current;
-		}
-		prev = current;
-		current = current->next;
 	}
-
-	if(smallest != head)
-	{
-		smallestPrev->next = head;
-		temp = head->next;
-		head->next = smallest->next;
-		smallest->next = temp;
-	}
-
-	smallest->next = sort_positions(smallest->next);
-	if(smallest->next == largest)
-	{
-		smallest->next->next = NULL;
-	}
-	return smallest;
 }

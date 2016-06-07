@@ -8,6 +8,9 @@
 #include "lightning.h"
 #include "sprite.h"
 
+static int nextThink = 0;
+static int thinkRate = 48;
+
 void init_all_systems();
 
 
@@ -29,20 +32,25 @@ int main(int argc, char *argv[])
 
 	the_renderer = graphics_get_renderer();
 
-	lightning = lightning_new(vect2d_new(100, 300), vect2d_new(1100, 300), 8);
-	lightning->draw = NULL;
-	lightning_create_bolt(lightning, 8);
 	do
 	{
 		SDL_RenderClear(the_renderer);
 
-		center->x = 0;
-		center->y = 0;
-
-		lightning_draw_all();
-
 		SDL_GetMouseState(&x, &y);
 		printf("Mouse %d, %d\n", x, y);
+
+		if(get_time() > nextThink)
+		{
+			lightning_purge_system();
+
+			lightning = lightning_new(vect2d_new(100, 300), vect2d_new(x, y), 6);
+			lightning->draw = NULL;
+			lightning_create_bolt(lightning, lightning->thickness/2);
+
+			nextThink = get_time() + thinkRate;
+		}
+
+		lightning_draw_all();
 
 		graphics_next_frame();
 		SDL_PumpEvents();
